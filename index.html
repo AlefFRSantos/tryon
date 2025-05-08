@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -42,97 +42,99 @@
     </div>
 
     <script>
-      const brand_keys = {
-        colcci: "1846111b-06c0-402c-af90-8fd6c17fa927",
-        forum: "85784208-92d4-44b0-b223-64a473ec8d92",
-        open: "6acb3ddd-0936-4571-a1b4-d737122acb2c",
-      }
-
       // Get query parameters
-      const urlParams = new URLSearchParams(window.location.search)
-      const sku = urlParams.get("sku") ? urlParams.get("sku") : "101010"
-      const gender = urlParams.get("gender") ? urlParams.get("gender") : "male"
-      const brand = urlParams.get("brand") ? urlParams.get("brand") : "colcci"
+      const urlParams = new URLSearchParams(window.location.search);
+      // const sku = urlParams.get("sku")
+      // const splashImage = urlParams.get("splashImageUrl")
+      // const _themeColor = urlParams.get("themeColor")
 
       function yourPlatformAddToCartFunction(...skus) {
-        console.log("Adicionando ao carrinho:", skus)
-        // Sua lógica de carrinho aqui
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({ type: "addToCart", skus })
+        );
       }
 
       function handleBuyButton(skus) {
-        yourPlatformAddToCartFunction(...skus)
+        yourPlatformAddToCartFunction(...skus);
+      }
+      function close() {
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({ type: "close" })
+        );
       }
 
       function handleScriptLoaded() {
-        initializeDorisWidget()
-        dorisStart()
+        initializeDorisWidget();
+        dorisStart();
       }
 
       function injectDorisSDK() {
-        const script = document.createElement("script")
-        script.type = "text/javascript"
-        script.async = true
-        script.onload = handleScriptLoaded
-        script.src = "https://mix.doris.mobi/doris-widget.js"
-        document.head.appendChild(script)
+        const script = document.createElement("script");
+        script.type = "text/javascript";
+        script.async = true;
+        script.onload = handleScriptLoaded;
+        script.src = "https://mix.doris.mobi/doris-widget.js";
+        document.head.appendChild(script);
 
-        const dorisWidget = document.createElement("div")
-        dorisWidget.id = "doris-widget"
-        document.body.appendChild(dorisWidget)
+        const dorisWidget = document.createElement("div");
+        dorisWidget.id = "doris-widget";
+        document.body.appendChild(dorisWidget);
       }
 
       function initializeDorisWidget() {
         if (!window.DorisWidget) {
-          console.warn("DorisWidget ainda não disponível.")
-          return
+          console.warn("DorisWidget ainda não disponível.");
+          return;
         }
 
         window.DorisWidget.init({
-          apiKey: brand_keys[brand],
-          // theme: { colors: { primary: '#000000' } },
+          apiKey: dorisApiKey,
+          // theme: {
+          //   colors: { primary: _themeColor ? "#" + _themeColor : "#000000" },
+          // },
           // position: { x: 'left' },
-          // splashImage: 'https://example.com/your-splash-image.jpg',
+          // splashImage: splashImage,
           language: "pt",
-          handleBuyButton,
-        })
+          close,
+        });
       }
 
       async function dorisStart() {
         if (!window.DorisWidget) {
-          console.warn("DorisWidget ainda não disponível.")
-          return
+          console.warn("DorisWidget ainda não disponível.");
+          return;
         }
 
         try {
           const productIsValid = await window.DorisWidget.verify({
-            apiKey: brand_keys[brand],
+            apiKey: dorisApiKey,
             sku,
-          })
+          });
 
-          console.log("Produto válido:", productIsValid)
+          console.log("Produto válido:", productIsValid);
 
           if (productIsValid) {
             window.DorisWidget.start({
               skus: [sku],
               defaultGender: gender,
-            })
+            });
           } else {
-            console.warn("SKU não é válido para o widget Doris")
+            console.warn("SKU não é válido para o widget Doris");
           }
         } catch (error) {
-          console.error("Erro ao verificar o produto:", error)
+          console.error("Erro ao verificar o produto:", error);
         }
       }
 
       // On page load
       document.addEventListener("DOMContentLoaded", function () {
         if (window.DorisWidget) {
-          initializeDorisWidget()
-          dorisStart()
+          initializeDorisWidget();
+          dorisStart();
         } else {
-          injectDorisSDK()
+          injectDorisSDK();
         }
-      })
+      });
     </script>
   </body>
 </html>

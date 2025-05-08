@@ -42,23 +42,25 @@
     </div>
 
     <script>
+      const brand_keys = {
+        colcci: "1846111b-06c0-402c-af90-8fd6c17fa927",
+        forum: "85784208-92d4-44b0-b223-64a473ec8d92",
+        open: "6acb3ddd-0936-4571-a1b4-d737122acb2c",
+      }
+
       // Get query parameters
       const urlParams = new URLSearchParams(window.location.search)
-      const sku = urlParams.get("sku")
-      const splashImage = urlParams.get("splashImageUrl")
-      const _themeColor = urlParams.get("themeColor")
+      const sku = urlParams.get("sku") ? urlParams.get("sku") : "101010"
+      const gender = urlParams.get("gender") ? urlParams.get("gender") : "male"
+      const brand = urlParams.get("brand") ? urlParams.get("brand") : "colcci"
 
       function yourPlatformAddToCartFunction(...skus) {
-        window.ReactNativeWebView.postMessage(
-          JSON.stringify({ type: "addToCart", skus })
-        )
+        console.log("Adicionando ao carrinho:", skus)
+        // Sua lógica de carrinho aqui
       }
 
       function handleBuyButton(skus) {
         yourPlatformAddToCartFunction(...skus)
-      }
-      function close() {
-        window.ReactNativeWebView.postMessage(JSON.stringify({ type: "close" }))
       }
 
       function handleScriptLoaded() {
@@ -86,14 +88,12 @@
         }
 
         window.DorisWidget.init({
-          apiKey: dorisApiKey,
-          theme: {
-            colors: { primary: _themeColor ? "#" + _themeColor : "#000000" },
-          },
+          apiKey: brand_keys[brand],
+          // theme: { colors: { primary: '#000000' } },
           // position: { x: 'left' },
-          splashImage: splashImage,
+          // splashImage: 'https://example.com/your-splash-image.jpg',
           language: "pt",
-          close,
+          handleBuyButton,
         })
       }
 
@@ -105,7 +105,7 @@
 
         try {
           const productIsValid = await window.DorisWidget.verify({
-            apiKey: dorisApiKey,
+            apiKey: brand_keys[brand],
             sku,
           })
 
