@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Doris Widget Integration</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f5f5f5;
+      }
+      .container {
+        text-align: center;
+      }
+      button {
+        padding: 10px 20px;
+        background-color: #1976d2;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #1565c0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div
+        id="doris-trigger-wrapper"
+        style="position: fixed; bottom: 20px; right: 20px"
+      ></div>
+      <div id="doris-widget"></div>
+    </div>
+
+    <script>
+      // Get query parameters
+      const urlParams = new URLSearchParams(window.location.search)
+      const sku = urlParams.get("sku")
+      const splashImage = urlParams.get("splashImageUrl")
+      const _themeColor = urlParams.get("themeColor")
+
+      function yourPlatformAddToCartFunction(...skus) {
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({ type: "addToCart", skus })
+        )
+      }
+
+      function handleBuyButton(skus) {
+        yourPlatformAddToCartFunction(...skus)
+      }
+      function close() {
+        window.ReactNativeWebView.postMessage(JSON.stringify({ type: "close" }))
+      }
+
+      function handleScriptLoaded() {
+        initializeDorisWidget()
+        dorisStart()
+      }
+
+      function injectDorisSDK() {
+        const script = document.createElement("script")
+        script.type = "text/javascript"
+        script.async = true
+        script.onload = handleScriptLoaded
+        script.src = "https://mix.doris.mobi/doris-widget.js"
+        document.head.appendChild(script)
+
+        const dorisWidget = document.createElement("div")
+        dorisWidget.id = "doris-widget"
+        document.body.appendChild(dorisWidget)
+      }
+
+      function initializeDorisWidget() {
+        if (!window.DorisWidget) {
+          console.warn("DorisWidget ainda não disponível.")
+          return
+        }
+
+        window.DorisWidget.init({
+          apiKey: dorisApiKey,
+          theme: {
+            colors: { primary: _themeColor ? "#" + _themeColor : "#000000" },
+          },
+          // position: { x: 'left' },
+          splashImage: splashImage,
+          language: "pt",
+          close,
+        })
+      }
+
+      async function dorisStart() {
+        if (!window.DorisWidget) {
+          console.warn("DorisWidget ainda não disponível.")
+          return
+        }
+
+        try {
+          const productIsValid = await window.DorisWidget.verify({
+            apiKey: dorisApiKey,
+            sku,
+          })
+
+          console.log("Produto válido:", productIsValid)
+
+          if (productIsValid) {
+            window.DorisWidget.start({
+              skus: [sku],
+              defaultGender: gender,
+            })
+          } else {
+            console.warn("SKU não é válido para o widget Doris")
+          }
+        } catch (error) {
+          console.error("Erro ao verificar o produto:", error)
+        }
+      }
+
+      // On page load
+      document.addEventListener("DOMContentLoaded", function () {
+        if (window.DorisWidget) {
+          initializeDorisWidget()
+          dorisStart()
+        } else {
+          injectDorisSDK()
+        }
+      })
+    </script>
+  </body>
+</html>
