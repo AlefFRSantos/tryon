@@ -44,9 +44,9 @@
     <script>
       // Get query parameters
       const urlParams = new URLSearchParams(window.location.search);
-      // const sku = urlParams.get("sku")
-      // const splashImage = urlParams.get("splashImageUrl")
-      // const _themeColor = urlParams.get("themeColor")
+      const sku = urlParams.get("sku");
+      const splashImage = urlParams.get("splashImageUrl");
+      const _themeColor = urlParams.get("themeColor");
 
       function yourPlatformAddToCartFunction(...skus) {
         window.ReactNativeWebView.postMessage(
