@@ -44,17 +44,23 @@
     <script>
       // Get query parameters
       const urlParams = new URLSearchParams(window.location.search);
-      const sku = urlParams.get("sku") ? urlParams.get("sku") : "101010";
-      const gender = urlParams.get("gender") ? urlParams.get("gender") : "male";
-      const brand = urlParams.get("brand") ? urlParams.get("brand") : "colcci";
+      const sku = urlParams.get("sku");
+      const splashImage = urlParams.get("splashImageUrl");
+      const _themeColor = urlParams.get("themeColor");
 
       function yourPlatformAddToCartFunction(...skus) {
-        console.log("Adicionando ao carrinho:", skus);
-        // Sua lógica de carrinho aqui
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({ type: "addToCart", skus })
+        );
       }
 
       function handleBuyButton(skus) {
         yourPlatformAddToCartFunction(...skus);
+      }
+      function close() {
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({ type: "close" })
+        );
       }
 
       function handleScriptLoaded() {
@@ -83,11 +89,14 @@
 
         window.DorisWidget.init({
           apiKey: dorisApiKey,
-          theme: { colors: { primary: "#000000" } },
+          theme: {
+            colors: { primary: _themeColor ? "#" + _themeColor : "#000000" },
+          },
           // position: { x: 'left' },
-          // splashImage: 'https://example.com/your-splash-image.jpg',
+          splashImage: splashImage,
           language: "pt",
           handleBuyButton,
+          close,
         });
       }
 
