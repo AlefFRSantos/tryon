@@ -54,8 +54,10 @@
         );
       }
 
+      //Retorna os skus para o app
       function handleBuyButton(skus) {
-        yourPlatformAddToCartFunction(...skus);
+        // yourPlatformAddToCartFunction(...skus);
+        return false;
       }
       function close() {
         window.ReactNativeWebView.postMessage(
@@ -95,7 +97,7 @@
           // position: { x: 'left' },
           splashImage: splashImage,
           language: "pt",
-          handleBuyButton,
+          // handleBuyButton,
           close,
         });
       }
