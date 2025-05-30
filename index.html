@@ -45,7 +45,6 @@
       // Get query parameters
       const urlParams = new URLSearchParams(window.location.search);
       const sku = urlParams.get("sku");
-      const splashImage = urlParams.get("splashImageUrl");
       const _themeColor = urlParams.get("themeColor");
 
       function yourPlatformAddToCartFunction(...skus) {
@@ -94,10 +93,7 @@
           theme: {
             colors: { primary: _themeColor ? "#" + _themeColor : "#000000" },
           },
-          // position: { x: 'left' },
-          splashImage: splashImage,
           language: "pt",
-          // handleBuyButton,
           close,
         });
       }
