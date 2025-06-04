@@ -1,163 +1,249 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Doris Widget Integration</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 20px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        background-color: #f5f5f5;
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Doris Widget Integration</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f5f5f5;
+    }
+
+    .container {
+      text-align: center;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #1565c0;
+    }
+
+    #doris-widget {
+      z-index: 10;
+    }
+
+    .loader {
+      z-index: 1;
+      width: 50px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: 8px solid #514b82;
+      animation: l20-1 0.8s infinite linear alternate,
+        l20-2 1.6s infinite linear;
+    }
+
+    @keyframes l20-1 {
+      0% {
+        clip-path: polygon(50% 50%,
+            0 0,
+            50% 0%,
+            50% 0%,
+            50% 0%,
+            50% 0%,
+            50% 0%);
       }
-      .container {
-        text-align: center;
+
+      12.5% {
+        clip-path: polygon(50% 50%,
+            0 0,
+            50% 0%,
+            100% 0%,
+            100% 0%,
+            100% 0%,
+            100% 0%);
       }
-      button {
-        padding: 10px 20px;
-        background-color: #1976d2;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        font-size: 16px;
-        cursor: pointer;
+
+      25% {
+        clip-path: polygon(50% 50%,
+            0 0,
+            50% 0%,
+            100% 0%,
+            100% 100%,
+            100% 100%,
+            100% 100%);
       }
-      button:hover {
-        background-color: #1565c0;
+
+      50% {
+        clip-path: polygon(50% 50%,
+            0 0,
+            50% 0%,
+            100% 0%,
+            100% 100%,
+            50% 100%,
+            0% 100%);
       }
-      #doris-widget {
-        z-index: 10;
+
+      62.5% {
+        clip-path: polygon(50% 50%,
+            100% 0,
+            100% 0%,
+            100% 0%,
+            100% 100%,
+            50% 100%,
+            0% 100%);
       }
-      .loader {
-        z-index: 1;
-        width: 30px;
-        padding: 8px;
-        aspect-ratio: 1;
-        border-radius: 50%;
-        background: #000;
-        --_m: conic-gradient(#0000 10%, #000),
-          linear-gradient(#000 0 0) content-box;
-        -webkit-mask: var(--_m);
-        mask: var(--_m);
-        -webkit-mask-composite: source-out;
-        mask-composite: subtract;
-        animation: l3 1s infinite linear;
+
+      75% {
+        clip-path: polygon(50% 50%,
+            100% 100%,
+            100% 100%,
+            100% 100%,
+            100% 100%,
+            50% 100%,
+            0% 100%);
       }
-      @keyframes l3 {
-        to {
-          transform: rotate(1turn);
+
+      100% {
+        clip-path: polygon(50% 50%,
+            50% 100%,
+            50% 100%,
+            50% 100%,
+            50% 100%,
+            50% 100%,
+            0% 100%);
+      }
+    }
+
+    @keyframes l20-2 {
+      0% {
+        transform: scaleY(1) rotate(0deg);
+      }
+
+      49.99% {
+        transform: scaleY(1) rotate(135deg);
+      }
+
+      50% {
+        transform: scaleY(-1) rotate(0deg);
+      }
+
+      100% {
+        transform: scaleY(-1) rotate(-135deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div id="doris-trigger-wrapper" style="position: fixed; bottom: 20px; right: 20px"></div>
+    <div id="doris-widget"></div>
+    <div class="loader"></div>
+  </div>
+
+  <script>
+    // Get query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const sku = urlParams.get("sku");
+    const splashImage = urlParams.get("splashImageUrl");
+    const _themeColor = urlParams.get("themeColor");
+
+    function yourPlatformAddToCartFunction(...skus) {
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({ type: "addToCart", skus })
+      );
+    }
+
+    //Retorna os skus para o app
+    function handleBuyButton(skus) {
+      // yourPlatformAddToCartFunction(...skus);
+      return false;
+    }
+    function close() {
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({ type: "close" })
+      );
+    }
+
+    function handleScriptLoaded() {
+      initializeDorisWidget();
+      dorisStart();
+    }
+
+    function injectDorisSDK() {
+      const script = document.createElement("script");
+      script.type = "text/javascript";
+      script.async = true;
+      script.onload = handleScriptLoaded;
+      script.src = "https://mix.doris.mobi/doris-widget.js";
+      document.head.appendChild(script);
+
+      const dorisWidget = document.createElement("div");
+      dorisWidget.id = "doris-widget";
+      document.body.appendChild(dorisWidget);
+    }
+
+    function initializeDorisWidget() {
+      if (!window.DorisWidget) {
+        console.warn("DorisWidget ainda não disponível.");
+        return;
+      }
+
+      window.DorisWidget.init({
+        apiKey: "85784208-92d4-44b0-b223-64a473ec8d92",
+        theme: {
+          colors: { primary: _themeColor ? "#" + _themeColor : "#000000" },
+        },
+        splashImage: splashImage,
+        language: "pt",
+        close,
+      });
+    }
+
+    async function dorisStart() {
+      if (!window.DorisWidget) {
+        console.warn("DorisWidget ainda não disponível.");
+        return;
+      }
+
+      try {
+        const productIsValid = await window.DorisWidget.verify({
+          apiKey: "85784208-92d4-44b0-b223-64a473ec8d92",
+          sku,
+        });
+
+        console.log("Produto válido:", productIsValid);
+
+        if (productIsValid) {
+          window.DorisWidget.start({
+            skus: [sku],
+            defaultGender: gender,
+          });
+        } else {
+          console.warn("SKU não é válido para o widget Doris");
         }
+      } catch (error) {
+        console.error("Erro ao verificar o produto:", error);
       }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div
-        id="doris-trigger-wrapper"
-        style="position: fixed; bottom: 20px; right: 20px"
-      ></div>
-      <div id="doris-widget"></div>
-      <div class="loader"></div>
-    </div>
+    }
 
-    <script>
-      // Get query parameters
-      const urlParams = new URLSearchParams(window.location.search);
-      const sku = urlParams.get("sku");
-      const _themeColor = urlParams.get("themeColor");
-
-      function yourPlatformAddToCartFunction(...skus) {
-        window.ReactNativeWebView.postMessage(
-          JSON.stringify({ type: "addToCart", skus })
-        );
-      }
-
-      //Retorna os skus para o app
-      function handleBuyButton(skus) {
-        // yourPlatformAddToCartFunction(...skus);
-        return false;
-      }
-      function close() {
-        window.ReactNativeWebView.postMessage(
-          JSON.stringify({ type: "close" })
-        );
-      }
-
-      function handleScriptLoaded() {
+    // On page load
+    document.addEventListener("DOMContentLoaded", function () {
+      if (window.DorisWidget) {
         initializeDorisWidget();
         dorisStart();
+      } else {
+        injectDorisSDK();
       }
+    });
+  </script>
+</body>
 
-      function injectDorisSDK() {
-        const script = document.createElement("script");
-        script.type = "text/javascript";
-        script.async = true;
-        script.onload = handleScriptLoaded;
-        script.src = "https://mix.doris.mobi/doris-widget.js";
-        document.head.appendChild(script);
-
-        const dorisWidget = document.createElement("div");
-        dorisWidget.id = "doris-widget";
-        document.body.appendChild(dorisWidget);
-      }
-
-      function initializeDorisWidget() {
-        if (!window.DorisWidget) {
-          console.warn("DorisWidget ainda não disponível.");
-          return;
-        }
-
-        window.DorisWidget.init({
-          apiKey: dorisApiKey,
-          theme: {
-            colors: { primary: _themeColor ? "#" + _themeColor : "#000000" },
-          },
-          language: "pt",
-          close,
-        });
-      }
-
-      async function dorisStart() {
-        if (!window.DorisWidget) {
-          console.warn("DorisWidget ainda não disponível.");
-          return;
-        }
-
-        try {
-          const productIsValid = await window.DorisWidget.verify({
-            apiKey: dorisApiKey,
-            sku,
-          });
-
-          console.log("Produto válido:", productIsValid);
-
-          if (productIsValid) {
-            window.DorisWidget.start({
-              skus: [sku],
-              defaultGender: gender,
-            });
-          } else {
-            console.warn("SKU não é válido para o widget Doris");
-          }
-        } catch (error) {
-          console.error("Erro ao verificar o produto:", error);
-        }
-      }
-
-      // On page load
-      document.addEventListener("DOMContentLoaded", function () {
-        if (window.DorisWidget) {
-          initializeDorisWidget();
-          dorisStart();
-        } else {
-          injectDorisSDK();
-        }
-      });
-    </script>
-  </body>
 </html>
