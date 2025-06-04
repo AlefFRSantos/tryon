@@ -154,6 +154,7 @@
     const sku = urlParams.get("sku");
     const splashImage = urlParams.get("splashImageUrl");
     const _themeColor = urlParams.get("themeColor");
+    const dorisApiKey = urlParams.get("dorisApiKey")
 
     function yourPlatformAddToCartFunction(...skus) {
       window.ReactNativeWebView.postMessage(
@@ -197,7 +198,7 @@
       }
 
       window.DorisWidget.init({
-        apiKey: "85784208-92d4-44b0-b223-64a473ec8d92",
+        apiKey: dorisApiKey,
         theme: {
           colors: { primary: _themeColor ? "#" + _themeColor : "#000000" },
         },
@@ -215,7 +216,7 @@
 
       try {
         const productIsValid = await window.DorisWidget.verify({
-          apiKey: "85784208-92d4-44b0-b223-64a473ec8d92",
+          apiKey: dorisApiKey,
           sku,
         });
 
