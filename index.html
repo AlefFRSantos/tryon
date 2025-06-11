@@ -154,7 +154,8 @@
     const sku = urlParams.get("sku");
     const splashImage = urlParams.get("splashImageUrl");
     const _themeColor = urlParams.get("themeColor");
-    const dorisApiKey = urlParams.get("dorisApiKey")
+    const dorisApiKey = urlParams.get("dorisApiKey");
+    const gender = urlParams.get("gender");
 
     function yourPlatformAddToCartFunction(...skus) {
       window.ReactNativeWebView.postMessage(
@@ -215,13 +216,6 @@
       }
 
       try {
-        const productIsValid = await window.DorisWidget.verify({
-          apiKey: dorisApiKey,
-          sku,
-        });
-
-        console.log("Produto válido:", productIsValid);
-
         if (productIsValid) {
           window.DorisWidget.start({
             skus: [sku],
